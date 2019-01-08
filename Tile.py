@@ -1,8 +1,12 @@
 class Tile:
-    def __init__(self, x, y, civ="Neutral", type=1, agrVal=1):
+    def __init__(self, x, y, civ=None, type=1, agrVal=1):
         self.x_ = x
         self.y_ = y
-        self.Civ_ = civ
+        self.civ_ = civ
+        if self.civ_ is not None:
+            self.civId_ = self.civ_.getId
+        else:
+            self.civId_ = -1
         self.type_ = type
         self.neighbours_ = None
         self.agrVal_ = agrVal
@@ -33,3 +37,16 @@ class Tile:
 
     def getAgrVal(self):
         return self.agrVal_
+
+    def setCiv(self, civ):
+        self.civ_ = civ
+        if civ is not None:
+            self.civId_ = civ.getId()
+        else:
+            self.civId_ = -1
+
+    def getCiv(self):
+        return self.civ_
+
+    def getCivId(self):
+        return self.civId_

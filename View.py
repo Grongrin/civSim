@@ -1,4 +1,5 @@
 import TileMap as tm
+import Civilization
 from tkinter import *
 import math
 
@@ -10,10 +11,12 @@ class Tile:
         self.cords_ = cords
         self.index_=index
 
+
 class View(Tk):
     def __init__(self):
         Tk.__init__(self)
         self.hexagons = []
+        self.civs_ = []
         self.biggestTileX=0
         self.biggestTileY=0
         self.infoId=0
@@ -21,6 +24,10 @@ class View(Tk):
         self.canvas.pack()
         self.canvas.bind("<Motion>", self.getTileByXY)
         self.canvas.create_text(1100,10,text="Tile info:")
+        self.a_ = 0
+
+    def addCiv(self, civ):
+        self.civs_.append(civ)
 
     def drawMap(self,map):
         xSize = map.getXSize()
@@ -32,16 +39,26 @@ class View(Tk):
         xHeight = (2*xSize+1)*math.sqrt(3)/2
         print(yHeight, xHeight)
         if yHeight>xHeight:
-            a=1100/yHeight*0.9
+            self.a_=1100/yHeight*0.9
         else:
-            a=900/xHeight*0.9
+            self.a_=900/xHeight*0.9
 
-        allTiles=map.getMap()
+        #allTiles=map.getMap()
         for i in range(xSize):
             for j in range(ySize):
-                self.drawTile(allTiles[i][j],a)
+                self.drawTile(map.getTile(i, j), self.a_)
 
     def drawTile(self,tile,a):
+        if tile is None:
+            return
+        colors = [
+            "#FFFF66",
+            "#3366FF",
+            "#e63813",
+            "#091e4a",
+            "#0d98a8",
+            "#720da8"
+        ]
         tileCoords = tile.getCoords()
         if tileCoords[1] % 2 == 0:
             startX = 1.5*a + a * math.sqrt(3) * tileCoords[0]
@@ -56,10 +73,15 @@ class View(Tk):
             endY = startY + a * math.cos(math.radians(angle * i))
             startX = endX
             startY = endY
-        if tile.getType() == 1:
-            color = "#FFFF66"
+        if tile.getCiv() is not None:
+            id = tile.getCivId()
+            color = colors[id+2]
         else:
-            color = "#3366FF"
+            if tile.getType() == 1:
+                color = colors[0]
+            else:
+                color = colors[1]
+
         index = self.canvas.create_polygon(coords[0][0],
                                    coords[0][1],
                                    coords[1][0],
@@ -103,6 +125,8 @@ class View(Tk):
         return None
 
     def getTileByXY(self,event):
+        for c in self.civs_:
+            self.drawTile(c.makeMove(), self.a_)
         print(event.x,event.y)
         if (event.x<self.biggestTileX and event.y<self.biggestTileY):
             nearest = int(self.canvas.find_closest(event.x,event.y)[0])
