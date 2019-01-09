@@ -110,8 +110,6 @@ class View(Tk):
 
 
     def showTileDetails(self,tile):
-        if tile==None:
-            return
         self.canvas.delete(self.infoId)
         onscreen = "("+str(tile.x_)+","+str(tile.y_)+")"
         self.infoId=self.canvas.create_text(1100,20,text=onscreen)
@@ -124,10 +122,13 @@ class View(Tk):
                 return i
         return None
 
-    def getTileByXY(self,event):
+    def getTileByXY(self, event):
         for c in self.civs_:
-            self.drawTile(c.makeMove(), self.a_)
-        print(event.x,event.y)
+            changedTiles = c.makeMove()
+            if changedTiles is not None:
+                for t in changedTiles:
+                    self.drawTile(t, self.a_)
+        print(event.x, event.y)
         if (event.x<self.biggestTileX and event.y<self.biggestTileY):
             nearest = int(self.canvas.find_closest(event.x,event.y)[0])
             print(nearest)

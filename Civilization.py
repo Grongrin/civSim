@@ -19,6 +19,10 @@ class Civilization:
         self.lastMoveBenefit_ = 0
         self.willExpand_ = True
         self.territoryCenter_ = []
+        self.growth = 0
+        self.technologyLevel = 1
+        self.tresury = 0
+        self.taxrate = 0.2
 
     def getId(self):
         return self.id_
@@ -86,8 +90,9 @@ class Civilization:
         return math.sqrt(laborers * agrValue)
 
     def getMaxTerritory(self, soldiers):
-        a = 0.5
-        return int(a*math.pi*(soldiers**(4./5)))
+        a = 0.2
+        r = soldiers**(2./10)
+        return int(a * math.pi * r**2)
 
     def calcSoldiersToExpand(self):
         need = 0
@@ -101,16 +106,31 @@ class Civilization:
             redundant += 1
         return redundant-1
 
+    def calcArmyWages(self):
+        return math.sqrt(self.territoryAgrValue_ / self.laborers_)/2
+
+    def calcTax(self):
+        return
+
     def reproduce(self):
-        self.laborers_ += int(0.01 * self.population_)
+        growthRate = 0.05 * self.agrOutput_/self.population_
+        self.growth += growthRate * self.population_
+        if self.growth >= 1:
+            self.laborers_ += int(self.growth)
+            self.growth -= int(self.growth)
 
     def makeMove(self):
         expanded = False
+        self.reproduce()
+        self.balancePop()
         # self.maxTerritory_ = self.getMaxTerritory(self.soldiers_)
+
+        newTiles = []
         bestTile = self.neighbouringTiles_[0]
         for n in self.neighbouringTiles_:
             if self.rate(n) > self.rate(bestTile):
                 bestTile = n
+
         soldiersToExpand = self.calcSoldiersToExpand()
         redundantSoldiers = self.calcRedundandSoldiers()
 
@@ -121,35 +141,55 @@ class Civilization:
         else:
             self.willExpand_ = False
 
-        if self.willExpand_:
+        while self.willExpand_:
             self.soldiers_ += soldiersToExpand
             self.laborers_ -= soldiersToExpand
             self.maxTerritory_ = self.getMaxTerritory(self.soldiers_)
             if self.maxTerritory_ > self.currTerritory_:
                 self.takeoverTerritory(bestTile)
+                newTiles.append(bestTile)
                 expanded = True
-        else:
-                self.laborers_ += redundantSoldiers
-                self.soldiers_ -= redundantSoldiers
-                self.maxTerritory_ = self.getMaxTerritory(self.soldiers_)
+
+            bestTile = self.neighbouringTiles_[0]
+            for n in self.neighbouringTiles_:
+                if self.rate(n) > self.rate(bestTile):
+                    bestTile = n
+
+            soldiersToExpand = self.calcSoldiersToExpand()
+            redundantSoldiers = self.calcRedundandSoldiers()
+
+            if self.laborers_ >= soldiersToExpand and \
+                    self.getOutputs(self.laborers_ - soldiersToExpand, self.territoryAgrValue_ + bestTile.getAgrVal()) > \
+                    self.getOutputs(self.laborers_ + redundantSoldiers, self.territoryAgrValue_):
+                self.willExpand_ = True
+            else:
+                self.willExpand_ = False
+
+        self.laborers_ += redundantSoldiers
+        self.soldiers_ -= redundantSoldiers
+        self.maxTerritory_ = self.getMaxTerritory(self.soldiers_)
+
         oldArgOutput = self.agrOutput_
         self.agrOutput_ = self.getOutputs(self.laborers_, self.territoryAgrValue_)
         self.lastMoveBenefit_ = self.agrOutput_ - oldArgOutput
-        self.reproduce()
-        self.balancePop()
+
         print("Move made")
-        print(self.territory_)
-        print("Current population:", self.population_)
-        print("Soldiers: ", self.soldiers_)
-        print("Current predicted expansion profit: ", (self.getOutputs(self.laborers_ - soldiersToExpand, self.territoryAgrValue_ + bestTile.getAgrVal()) -
-              self.getOutputs(self.laborers_ + redundantSoldiers, self.territoryAgrValue_)))
-        print("Max territory: ", self.maxTerritory_)
-        print("Current territory: ", self.currTerritory_)
-        print("Best tile :", bestTile)
-        print("Robotnicy: ", self.laborers_)
+        print("Obecna populacja: ", self.population_, " Żołnierze: ", self.soldiers_, " Robotnicy: ", self.laborers_)
         print("AgrVal: ", self.territoryAgrValue_)
+        print("Produkcja : ", self.agrOutput_, " Produkcja po odjęciu  kosztu armii: ", self.agrOutput_ - self.calcArmyWages()*self.soldiers_)
+        print("Pozostała produkcja na robotnika: ", (self.agrOutput_ - self.calcArmyWages()*self.soldiers_)/self.laborers_)
+        print("Żołnierze do rozwoju : ", soldiersToExpand, " Żołnierze zbędni : ", redundantSoldiers)
+        print("Army wages per soldier: ", self.calcArmyWages())
+        print("Laborers, agrValue", self.laborers_, self.territoryAgrValue_)
+        print("Predicted expansion profit after move: ",
+              (self.getOutputs(self.laborers_ - soldiersToExpand, self.territoryAgrValue_ + bestTile.getAgrVal()) -
+               self.getOutputs(self.laborers_ + redundantSoldiers, self.territoryAgrValue_)))
+        print("Max territory: ", self.maxTerritory_, " Current territory: ", self.currTerritory_)
+
+        # print("Best tile :", bestTile)
+
         if expanded:
-            return bestTile
+            return newTiles
         else:
             return None
 
