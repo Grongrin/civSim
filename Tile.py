@@ -1,3 +1,6 @@
+import math
+
+
 class Tile:
     def __init__(self, x, y, civ=None, type=1, agrVal=1):
         self.x_ = x
@@ -12,7 +15,7 @@ class Tile:
         self.agrVal_ = agrVal
 
     def getCoords(self):
-        return (self.x_, self.y_)
+        return [self.x_, self.y_]
 
     def getX(self):
         return self.x_
@@ -50,3 +53,5 @@ class Tile:
 
     def getCivId(self):
         return self.civId_
+
+
