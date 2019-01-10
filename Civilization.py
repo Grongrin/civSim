@@ -9,8 +9,8 @@ class Civilization:
         self.territory_ = []
         self.neighbouringTiles_ = []
         self.population_ = 100
-        self.laborers_ = 50
-        self.soldiers_ = 50
+        self.laborers_ = 95
+        self.soldiers_ = 5
         self.maxTerritory_ = 1
         self.soldiersNeededToExpand = 0
         self.currTerritory_ = 0
@@ -89,7 +89,7 @@ class Civilization:
         if laborers < 1:
             return 0
             print("ERROR: liczba robotników ujemna!")
-        return math.sqrt(laborers * agrValue)
+        return math.sqrt(laborers * agrValue*2)
 
     def getMaxTerritory(self, soldiers):
         a = 0.2
@@ -121,7 +121,7 @@ class Civilization:
         return rate
 
     def reproduce(self):
-        growthRate = 0.05 * self.agrOutput_/self.population_
+        growthRate = 0.05 * self.agrOutput_*(1-self.taxrate_)/self.population_
         self.growth_ += growthRate * self.population_
         if self.growth_ >= 1:
             self.laborers_ += int(self.growth_)
@@ -188,11 +188,13 @@ class Civilization:
         #if self.income_ < 0:
         #    self.taxrate_ = self.calcMinTaxRate()
 
+        print("\nCiv Id: ", self.id_)
         print("Move made")
         print("Obecna populacja: ", self.population_, " Żołnierze: ", self.soldiers_, " Robotnicy: ", self.laborers_)
         print("AgrVal: ", self.territoryAgrValue_)
         print("Produkcja : ", self.agrOutput_, " Produkcja po odjęciu  kosztu armii: ", self.agrOutput_ - self.calcArmyWages()*self.soldiers_)
-        print("Pozostała produkcja na robotnika: ", (self.agrOutput_ - self.calcArmyWages()*self.soldiers_)/self.laborers_)
+        #print("Pozostała produkcja na robotnika: ", (self.agrOutput_ - self.calcArmyWages()*self.soldiers_)/self.laborers_)
+        print("Produkcja na robotnika po odjęciu podatku: ", self.agrOutput_ * (1 - self.taxrate_) / self.laborers_)
         print("Żołnierze do rozwoju : ", soldiersToExpand, " Żołnierze zbędni : ", redundantSoldiers)
         print("Army wages per soldier: ", self.calcArmyWages())
         print("Laborers, agrValue", self.laborers_, self.territoryAgrValue_)

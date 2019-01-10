@@ -16,11 +16,11 @@ view = View.View()
 map = TileMap.TileMap(100,170)
 m = map.getMap()
 
-x = 30
+x = 70
 y = 50
 civ1 = Civilization.Civilization(0)
 while map.getTile(x, y).getType() != 1:
-    x += 1
+    x -= 1
 civ1.setStartingTile(map.getTile(x, y))
 
 x = 20
