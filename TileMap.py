@@ -6,14 +6,35 @@ class TileMap:
         self.xSize_ = XSize
         self.ySize_ = YSize
         self.map_ = []
+
         for i in range(self.xSize_):
             self.map_.append([])
             for j in range(self.ySize_):
                 newTile = Tile.Tile(i, j)
                 self.map_[i].append(newTile)
+
         for i in range(self.xSize_):
             for j in range(self.ySize_):
                 self.setNeighbours(self.getTile(i, j))
+
+        for i in range(self.xSize_):
+            for j in range(self.ySize_):
+                self.getTile(i, j).randomizeTerrain()
+
+        for i in range(self.xSize_):
+            for j in range(self.ySize_):
+                iTile = self.getTile(i, j)
+                if iTile.getType() > 0:
+                    iTile.setType(1)
+                else:
+                    makeLand = True
+                    for n in iTile.getNeighbours():
+                        if n.getType() <= 0:
+                            makeLand = False
+                            break
+                    if makeLand:
+                        iTile.setType(1)
+
 
     def getTile(self, x, y):
         return self.map_[x][y]

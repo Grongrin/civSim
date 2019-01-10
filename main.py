@@ -15,12 +15,23 @@ from tkinter import *
 view = View.View()
 map = TileMap.TileMap(100,170)
 m = map.getMap()
+
+x = 30
+y = 50
 civ1 = Civilization.Civilization(0)
-print("tile 10,10 civ id: ", map.getTile(10, 10).getCivId())
-civ1.setStartingTile(map.getTile(50,50))
-print("Civ1 id: ", civ1.getId())
-print("tile 10,10 civ id: ", map.getTile(10, 10).getCivId())
+while map.getTile(x, y).getType() != 1:
+    x += 1
+civ1.setStartingTile(map.getTile(x, y))
+
+x = 20
+y = 40
+civ2 = Civilization.Civilization(1)
+while map.getTile(x, y).getType() != 1:
+    y += 1
+civ2.setStartingTile(map.getTile(x, y))
+
 view.addCiv(civ1)
+view.addCiv(civ2)
 #for i in m:
 #    for j in i:
 #        j.printCoords()

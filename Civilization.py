@@ -19,10 +19,11 @@ class Civilization:
         self.lastMoveBenefit_ = 0
         self.willExpand_ = True
         self.territoryCenter_ = []
-        self.growth = 0
-        self.technologyLevel = 1
-        self.tresury = 0
-        self.taxrate = 0.2
+        self.growth_ = 0
+        self.technologyLevel_ = 1
+        self.tresury_ = 0
+        self.taxrate_ = 0
+        self.income_ = 0
 
     def getId(self):
         return self.id_
@@ -32,7 +33,7 @@ class Civilization:
 
     def rate(self, tile):
         value = 0.
-        value += tile.getAgrVal()
+        value += tile.getAgrVal()*10
         value -= (self.getDistance(tile.getCoords(), self.territoryCenter_) / self.getDistance(self.territoryCenter_, [self.territoryCenter_[0], (self.territoryCenter_[1]+(math.sqrt(self.currTerritory_/math.pi)))]))
         # for n in tile.getNeighbours():
         #    if n in self.territory_:
@@ -45,7 +46,8 @@ class Civilization:
         tile.setCiv(self)
         self.territory_.append(tile)
         for n in tile.getNeighbours():
-            self.neighbouringTiles_.append(n)
+            if n.getType() == 1:
+                self.neighbouringTiles_.append(n)
         self.currTerritory_ += 1
         self.territoryAgrValue_ += tile.getAgrVal()
         self.territoryCenter_ = [float(tile.getX()), float(tile.getY())]
@@ -60,7 +62,7 @@ class Civilization:
         self.territory_.append(tile)
         self.neighbouringTiles_.remove(tile)
         for n in tile.getNeighbours():
-            if n not in self.neighbouringTiles_ and n not in self.territory_:
+            if n.getType() == 1 and n not in self.neighbouringTiles_ and n not in self.territory_:
                 self.neighbouringTiles_.append(n)
         self.currTerritory_ += 1
         self.territoryAgrValue_ += tile.getAgrVal()
@@ -110,14 +112,20 @@ class Civilization:
         return math.sqrt(self.territoryAgrValue_ / self.laborers_)/2
 
     def calcTax(self):
-        return
+        return self.agrOutput_*self.taxrate_
+
+    def calcMinTaxRate(self):
+        rate = 0.1
+        while self.agrOutput_*rate < self.calcArmyWages()*self.soldiers_:
+            rate += 0.01
+        return rate
 
     def reproduce(self):
         growthRate = 0.05 * self.agrOutput_/self.population_
-        self.growth += growthRate * self.population_
-        if self.growth >= 1:
-            self.laborers_ += int(self.growth)
-            self.growth -= int(self.growth)
+        self.growth_ += growthRate * self.population_
+        if self.growth_ >= 1:
+            self.laborers_ += int(self.growth_)
+            self.growth_ -= int(self.growth_)
 
     def makeMove(self):
         expanded = False
@@ -172,6 +180,13 @@ class Civilization:
         oldArgOutput = self.agrOutput_
         self.agrOutput_ = self.getOutputs(self.laborers_, self.territoryAgrValue_)
         self.lastMoveBenefit_ = self.agrOutput_ - oldArgOutput
+        tresuryBefore = self.tresury_
+        self.taxrate_ = self.calcMinTaxRate()
+        self.tresury_ += self.calcTax()
+        self.tresury_ -= self.calcArmyWages()*self.soldiers_
+        self.income_ = tresuryBefore - self.tresury_
+        #if self.income_ < 0:
+        #    self.taxrate_ = self.calcMinTaxRate()
 
         print("Move made")
         print("Obecna populacja: ", self.population_, " Żołnierze: ", self.soldiers_, " Robotnicy: ", self.laborers_)
@@ -185,7 +200,8 @@ class Civilization:
               (self.getOutputs(self.laborers_ - soldiersToExpand, self.territoryAgrValue_ + bestTile.getAgrVal()) -
                self.getOutputs(self.laborers_ + redundantSoldiers, self.territoryAgrValue_)))
         print("Max territory: ", self.maxTerritory_, " Current territory: ", self.currTerritory_)
-
+        print("Tresury: ", self.tresury_)
+        print("Tax rate: ", self.taxrate_)
         # print("Best tile :", bestTile)
 
         if expanded:

@@ -1,4 +1,5 @@
 import math
+import random
 
 
 class Tile:
@@ -13,6 +14,8 @@ class Tile:
         self.type_ = type
         self.neighbours_ = None
         self.agrVal_ = agrVal
+        self.height_ = 0
+        self.randomized_ = False
 
     def getCoords(self):
         return [self.x_, self.y_]
@@ -54,4 +57,47 @@ class Tile:
     def getCivId(self):
         return self.civId_
 
+    def isRandomized(self):
+        return self.randomized_
+
+    def getHeight(self):
+        return self.height_
+
+    def randomizeTerrain(self):
+        random.seed()
+
+        gen = random.randrange(-8, 26)  # generacja typu
+        for n in self.neighbours_:
+            if n.isRandomized():
+                gen += n.getType()
+        self.type_ = gen
+        if gen < 0:
+            self.height_ = -1
+        if self.type_ < -14:
+            self.type_ = -14
+        if self.type_ > 3:
+            self.type_ = 3
+
+        gen = random.normalvariate(400, 800)    # generacja wysokości
+        while gen < 0:
+            gen = random.normalvariate(2000, 8000)
+        self.height_ = gen
+
+        gen = random.random()   # generacja żyzności gleby (0 - 1)
+        self.agrVal_ = gen
+
+        a = 0
+        surroundingHeight = 0
+        surroundingFertility = 0
+        for n in self.neighbours_:  # uśrednianie wygenerowanych wartości z otoczeniem
+            if n.isRandomized():
+                surroundingHeight += n.getHeight()
+                surroundingFertility += n.getAgrVal()
+                a += 1
+            if a > 0:
+                self.height_ = (self.height_ + (surroundingHeight / a)) / 2
+                if random.random() > 0.4:
+                    self.agrVal_ = (self.agrVal_ + (surroundingFertility / a)) / 2
+
+        self.randomized_ = True
 

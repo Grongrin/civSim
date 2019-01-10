@@ -48,6 +48,9 @@ class View(Tk):
             for j in range(ySize):
                 self.drawTile(map.getTile(i, j), self.a_)
 
+    def fromRGB(self, R, G, B): # tłumaczenie koloru RGB na kolor dla tkinter
+        return "#%02x%02x%02x" % (R, G, B)
+
     def drawTile(self,tile,a):
         if tile is None:
             return
@@ -78,7 +81,8 @@ class View(Tk):
             color = colors[id+2]
         else:
             if tile.getType() == 1:
-                color = colors[0]
+                #color = colors[0]
+                color = self.fromRGB(int(tile.getAgrVal()*255), int(tile.getAgrVal()*255), int(tile.getAgrVal()*255))
             else:
                 color = colors[1]
 
@@ -113,7 +117,7 @@ class View(Tk):
         self.canvas.delete(self.infoId)
         onscreen = "("+str(tile.x_)+","+str(tile.y_)+")"
         self.infoId=self.canvas.create_text(1100,20,text=onscreen)
-        print("(",tile.x_, ", ", tile.y_, ")", sep='')
+        print("(", tile.x_, ", ", tile.y_, ")", sep='')
 
 
     def findNearestTile(self,nearest):
