@@ -52,11 +52,23 @@ class Civilization:
         self.territoryAgrValue_ += tile.getAgrVal()
         self.territoryCenter_ = [float(tile.getX()), float(tile.getY())]
 
+    def getTerritory(self):
+        return self.territory_
+
+    def getLaborersOnTile(self, tile):
+        if tile not in self.territory_:
+            print("ERROR: This civilization doesn't own that tile!")
+            return
+
+        return int(self.laborers_*(tile.getAgrVal()/self.territoryAgrValue_))
+
     def takeoverTerritory(self, tile):
         print("Taking over territory")
         if tile.getCiv() is not None:
             if tile.getCiv() == self:
                 print("Error: Trying to takeover own tile!")
+            else:
+                self.laborers_ += tile.getCiv().getLaborersOnTile(tile)/2
             tile.getCiv().looseTerritory(tile)
         tile.setCiv(self)
         self.territory_.append(tile)
@@ -70,17 +82,19 @@ class Civilization:
         self.territoryCenter_[1] = (self.territoryCenter_[1] * (self.currTerritory_ - 1) + tile.getY()) / self.currTerritory_
 
     def looseTerritory(self, tile):
+        self.laborers_ -= self.getLaborersOnTile(tile)
         self.territory_.remove(tile)
         tile.setCiv(None)
         self.territoryAgrValue_ -= tile.getAgrVal()
         for n in tile.getNeighbours():
-            d = True
-            for n2 in n.getNeighbours():
-                if n2 in self.territory_:
-                    d = False
-                    break
-            if d:
-                self.neighbouringTiles_.remove(n)
+            if n in self.neighbouringTiles_:
+                d = True
+                for n2 in n.getNeighbours():
+                    if n2 in self.territory_:
+                        d = False
+                        break
+                if d:
+                    self.neighbouringTiles_.remove(n)
 
     def balancePop(self):
         self.population_ = self.laborers_+self.soldiers_
@@ -127,20 +141,32 @@ class Civilization:
             self.laborers_ += int(self.growth_)
             self.growth_ -= int(self.growth_)
 
+    def soldiersPerTile(self):
+        return self.soldiers_/self.currTerritory_
+
     def makeMove(self):
         expanded = False
         self.reproduce()
         self.balancePop()
         # self.maxTerritory_ = self.getMaxTerritory(self.soldiers_)
-
         newTiles = []
-        bestTile = self.neighbouringTiles_[0]
-        for n in self.neighbouringTiles_:
-            if self.rate(n) > self.rate(bestTile):
-                bestTile = n
 
         soldiersToExpand = self.calcSoldiersToExpand()
         redundantSoldiers = self.calcRedundandSoldiers()
+
+        bestFreeTile = None
+        bestTile = self.neighbouringTiles_[0]
+        if bestTile.getCiv() is None:
+            bestFreeTile = bestTile
+        for n in self.neighbouringTiles_:
+            if self.rate(n) > self.rate(bestTile):
+                bestTile = n
+                if bestTile.getCiv() is None:
+                    bestFreeTile = bestFreeTile
+
+        if bestTile.getCiv() is not None:
+            while soldiersToExpand < bestTile.getCiv().soldiersPerTile():
+                soldiersToExpand += 1
 
         if self.laborers_ >= soldiersToExpand and \
                 self.getOutputs(self.laborers_-soldiersToExpand, self.territoryAgrValue_+bestTile.getAgrVal()) > \
@@ -148,6 +174,15 @@ class Civilization:
             self.willExpand_ = True
         else:
             self.willExpand_ = False
+            if bestTile.getCiv() is not None:
+                if bestFreeTile is not None:
+                    bestTile = bestFreeTile
+                soldiersToExpand = self.calcSoldiersToExpand()
+                if self.laborers_ >= soldiersToExpand and \
+                        self.getOutputs(self.laborers_ - soldiersToExpand,
+                                        self.territoryAgrValue_ + bestTile.getAgrVal()) > \
+                        self.getOutputs(self.laborers_ + redundantSoldiers, self.territoryAgrValue_):
+                    self.willExpand_ = True
 
         while self.willExpand_:
             self.soldiers_ += soldiersToExpand
@@ -158,13 +193,22 @@ class Civilization:
                 newTiles.append(bestTile)
                 expanded = True
 
+            soldiersToExpand = self.calcSoldiersToExpand()
+            redundantSoldiers = self.calcRedundandSoldiers()
+
+            bestFreeTile = None
             bestTile = self.neighbouringTiles_[0]
+            if bestTile.getCiv() is None:
+                bestFreeTile = bestTile
             for n in self.neighbouringTiles_:
                 if self.rate(n) > self.rate(bestTile):
                     bestTile = n
+                    if bestTile.getCiv() is None:
+                        bestFreeTile = bestFreeTile
 
-            soldiersToExpand = self.calcSoldiersToExpand()
-            redundantSoldiers = self.calcRedundandSoldiers()
+            if bestTile.getCiv() is not None:
+                while soldiersToExpand < bestTile.getCiv().soldiersPerTile():
+                    soldiersToExpand += 1
 
             if self.laborers_ >= soldiersToExpand and \
                     self.getOutputs(self.laborers_ - soldiersToExpand, self.territoryAgrValue_ + bestTile.getAgrVal()) > \
@@ -172,6 +216,15 @@ class Civilization:
                 self.willExpand_ = True
             else:
                 self.willExpand_ = False
+                if bestTile.getCiv() is not None:
+                    if bestFreeTile is not None:
+                        bestTile = bestFreeTile
+                    soldiersToExpand = self.calcSoldiersToExpand()
+                    if self.laborers_ >= soldiersToExpand and \
+                            self.getOutputs(self.laborers_ - soldiersToExpand,
+                                            self.territoryAgrValue_ + bestTile.getAgrVal()) > \
+                            self.getOutputs(self.laborers_ + redundantSoldiers, self.territoryAgrValue_):
+                        self.willExpand_ = True
 
         self.laborers_ += redundantSoldiers
         self.soldiers_ -= redundantSoldiers
