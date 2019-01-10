@@ -4,13 +4,14 @@ from tkinter import *
 import math
 
 class Tile:
-    def __init__(self,x,y,a,cords,index,civ):
+    def __init__(self,x,y,a,cords,index,civ,agrVal):
         self.x_ = x
         self.y_= y
         self.a_ = a
         self.cords_ = cords
         self.index_=index
         self.civilizationId_ = civ
+        self.agrVal_ = agrVal
 
 
 class View(Tk):
@@ -125,7 +126,7 @@ class View(Tk):
             civId = civ.getId()
         else:
             civId=-1
-        hex = Tile(tile.getX(),tile.getY(),a,coords,index,civId)
+        hex = Tile(tile.getX(),tile.getY(),a,coords,index,civId,tile.getAgrVal())
         self.hexagons.append(hex)
 
     def civInfo(self,civilization):
@@ -144,10 +145,9 @@ class View(Tk):
         self.canvas.delete(self.infoId)
         civId = tile.civilizationId_
         if civId==-1:
-            onscreen = "Tile info:\nWspółrzędne: ("+str(tile.x_)+","+str(tile.y_)+")"+\
-                       "\nŻyzność pola: "+tile.getAgrVal()
+            onscreen = "Tile info:\n("+str(tile.x_)+","+str(tile.y_)+")"+"\nŻyzność pola: " + str(tile.agrVal_)
         else:
-            onscreen = "Tile info:\n("+str(tile.x_)+","+str(tile.y_)+")"+"\n\n\n\nCvilization info:"+self.civInfo(self.findCivById(civId))
+            onscreen = "Tile info:\n("+str(tile.x_)+","+str(tile.y_)+")"+"\nŻyzność pola: " + str(tile.agrVal_)+"\n\n\n\nCvilization info:"+self.civInfo(self.findCivById(civId))
         self.infoId=self.canvas.create_text((700,20),anchor="nw",font=("helvetica", 12),text=onscreen)
 
 

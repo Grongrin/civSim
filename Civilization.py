@@ -34,7 +34,7 @@ class Civilization:
     def rate(self, tile):
         value = 0.
         value += tile.getAgrVal()*10
-        value -= (self.getDistance(tile.getCoords(), self.territoryCenter_) / self.getDistance(self.territoryCenter_, [self.territoryCenter_[0], (self.territoryCenter_[1]+(math.sqrt(self.currTerritory_/math.pi)))]))
+        value -= 1.2*(self.getDistance(tile.getCoords(), self.territoryCenter_) / self.getDistance(self.territoryCenter_, [self.territoryCenter_[0], (self.territoryCenter_[1]+(math.sqrt(self.currTerritory_/math.pi)))]))
         # for n in tile.getNeighbours():
         #    if n in self.territory_:
         #        value += 0.5
@@ -106,7 +106,7 @@ class Civilization:
         return math.sqrt(laborers * agrValue*2)
 
     def getMaxTerritory(self, soldiers):
-        a = 0.2
+        a = 0.4
         r = soldiers**(2./10)
         return int(a * math.pi * r**2)
 

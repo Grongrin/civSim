@@ -22,12 +22,28 @@ while map.getTile(x, y).getType() != 1:
     x -= 1
 civ1.setStartingTile(map.getTile(x, y))
 
-x = 25
-y = 45
+x = 50
+y = 70
 civ2 = Civilization.Civilization(1)
 while map.getTile(x, y).getType() != 1:
     y += 1
 civ2.setStartingTile(map.getTile(x, y))
+
+x = 80
+y = 80
+civ3 = Civilization.Civilization(2)
+while map.getTile(x, y).getType() != 1:
+    x -= 1
+civ3.setStartingTile(map.getTile(x, y))
+
+x = 90
+y = 30
+civ4 = Civilization.Civilization(3)
+while map.getTile(x, y).getType() != 1:
+    y += 1
+civ4.setStartingTile(map.getTile(x, y))
+
+
 
 #for i in m:
 #    for j in i:
@@ -35,5 +51,7 @@ civ2.setStartingTile(map.getTile(x, y))
 view = View.View(map)
 view.addCiv(civ1)
 view.addCiv(civ2)
+view.addCiv(civ3)
+view.addCiv(civ4)
 print(len(view.hexagons))
 view.mainloop()
