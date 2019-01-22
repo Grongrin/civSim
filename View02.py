@@ -27,7 +27,65 @@ class View(Tk):
         self.canvas.bind("<Motion>", self.getTileByXY)
         self.a_ = 0
         self.tilemap_=tilemap
+        self.Poli = False
+        self.Geog=True
+        self.ShowCiv=True
+        self.Sleep = 1
         self.drawMap()
+        buttonBG = self.canvas.create_rectangle(900, 0, 1000, 30, fill="grey40", outline="grey60")
+        buttonTXT = self.canvas.create_text(950, 15, text="Political")
+        self.canvas.tag_bind(buttonBG, "<Button-1>", self.clickedPoli)
+        self.canvas.tag_bind(buttonTXT, "<Button-1>", self.clickedPoli)
+        buttonBG2 = self.canvas.create_rectangle(1000, 0, 1100, 30, fill="grey40", outline="grey60")
+        buttonTXT2 = self.canvas.create_text(1050, 15, text="Geographical")
+        self.canvas.tag_bind(buttonBG2, "<Button-1>", self.clickedGeog)
+        self.canvas.tag_bind(buttonTXT2, "<Button-1>", self.clickedGeog)
+
+        buttonBG3 = self.canvas.create_rectangle(1100, 0, 1200, 30, fill="grey40", outline="grey60")
+        buttonTXT3 = self.canvas.create_text(1150, 15, text="Show/HideCiv")
+        self.canvas.tag_bind(buttonBG3, "<Button-1>", self.showCiv)
+        self.canvas.tag_bind(buttonTXT3, "<Button-1>", self.showCiv)
+
+
+        buttonBG4 = self.canvas.create_rectangle(1200, 0, 1300, 30, fill="grey40", outline="grey60")
+        buttonTXT4 = self.canvas.create_text(1250, 15, text="Pause")
+        self.canvas.tag_bind(buttonBG4, "<Button-1>", self.pause)
+        self.canvas.tag_bind(buttonTXT4, "<Button-1>", self.pause)
+
+
+    def pause(self,event):
+        if self.Sleep>20000:
+            self.Sleep=5
+        else:
+            self.Sleep=20100
+            self.doChanges()
+
+    def clickedPoli(self,event):
+        self.Poli = True
+        self.Geog=False
+        self.updateView()
+
+
+    def clickedGeog(self,event):
+        self.Poli = False
+        self.Geog=True
+        self.updateView()
+
+    def showCiv(self,event):
+        self.ShowCiv = not self.ShowCiv
+        self.updateView()
+
+    def updateView(self):
+        self.clearCanvas()
+        xSize = self.tilemap_.getXSize()
+        ySize = self.tilemap_.getYSize()
+        for i in range(xSize):
+            for j in range(ySize):
+                self.drawTile(self.tilemap_.getTile(i, j), self.a_)
+
+    def clearCanvas(self):
+        for i in self.hexagons:
+            self.canvas.delete(i.index_)
 
     def addCiv(self, civ):
         self.civs_.append(civ)
@@ -90,31 +148,74 @@ class View(Tk):
             endY = startY + a * math.cos(math.radians(angle * i))
             startX = endX
             startY = endY
-        if tile.getCiv() is not None:
-            id = tile.getCivId()
-            color = colors[id+2]
+        if self.Poli is True:
+            if tile.getCiv() is not None:
+                id = tile.getCivId()
+                color = colors[id+2]
+            else:
+                if tile.getType() == 1:
+                    color = colors[0]
+                else:
+                    color = colors[1]
+
+            index = self.canvas.create_polygon(coords[0][0],
+                                       coords[0][1],
+                                       coords[1][0],
+                                       coords[1][1],
+                                       coords[2][0],
+                                       coords[2][1],
+                                       coords[3][0],
+                                       coords[3][1],
+                                       coords[4][0],
+                                       coords[4][1],
+                                       coords[5][0],
+                                       coords[5][1],
+                                       fill=color,
+                                       outline="gray"
+                                       )
         else:
             if tile.getType() == 1:
-                #color = colors[0]
-                color = self.fromRGB(int(tile.getAgrVal()*255), int(tile.getAgrVal()*255), int(tile.getAgrVal()*255))
+                color = self.fromRGB(int(tile.getAgrVal() * 255), int(tile.getAgrVal() * 255/2),
+                                        0)
             else:
                 color = colors[1]
+            index = self.canvas.create_polygon(coords[0][0],
+                                                coords[0][1],
+                                                coords[1][0],
+                                                coords[1][1],
+                                                coords[2][0],
+                                                coords[2][1],
+                                                coords[3][0],
+                                                coords[3][1],
+                                                coords[4][0],
+                                                coords[4][1],
+                                                coords[5][0],
+                                                coords[5][1],
+                                                fill=color,
+                                                outline="gray",
+                                                   )
+            if tile.getCiv() is not None and self.ShowCiv is True:
+                id = tile.getCivId()
+                sti = 'gray50'
+                color = colors[id+2]
+                index = self.canvas.create_polygon(coords[0][0],
+                                                   coords[0][1],
+                                                   coords[1][0],
+                                                   coords[1][1],
+                                                   coords[2][0],
+                                                   coords[2][1],
+                                                   coords[3][0],
+                                                   coords[3][1],
+                                                   coords[4][0],
+                                                   coords[4][1],
+                                                   coords[5][0],
+                                                   coords[5][1],
+                                                   fill=color,
+                                                   outline="gray",
+                                                   stipple=sti
+                                                   )
 
-        index = self.canvas.create_polygon(coords[0][0],
-                                   coords[0][1],
-                                   coords[1][0],
-                                   coords[1][1],
-                                   coords[2][0],
-                                   coords[2][1],
-                                   coords[3][0],
-                                   coords[3][1],
-                                   coords[4][0],
-                                   coords[4][1],
-                                   coords[5][0],
-                                   coords[5][1],
-                                   fill=color,
-                                   outline="gray",
-                                   )
+
 
         for i in coords:
             if i[0]>self.biggestTileX:
@@ -164,7 +265,7 @@ class View(Tk):
                 for t in changedTiles:
                     self.drawTile(t, self.a_)
         self.canvas.update()
-        self.canvas.after(1,self.doChanges)
+        self.canvas.after(self.Sleep,self.doChanges)
 
     def getTileByXY(self, event):
         if (event.x<self.biggestTileX and event.y<self.biggestTileY):
