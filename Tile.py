@@ -3,7 +3,7 @@ import random
 
 
 class Tile:
-    def __init__(self, x, y, civ=None, type=1, agrVal=1):
+    def __init__(self, x, y, civ=None, type=1, agrVal=0):
         self.x_ = x
         self.y_ = y
         self.civ_ = civ
@@ -63,6 +63,9 @@ class Tile:
     def getHeight(self):
         return self.height_
 
+    def setAgrVal(self, val):
+        self.agrVal_ = val
+
     def randomizeTerrain(self):
         random.seed()
 
@@ -83,6 +86,7 @@ class Tile:
             gen = random.normalvariate(2000, 8000)
         self.height_ = gen
 
+
         gen = random.random()   # generacja żyzności gleby (0 - 1)
         self.agrVal_ = gen
 
@@ -90,7 +94,7 @@ class Tile:
         surroundingHeight = 0
         surroundingFertility = 0
         for n in self.neighbours_:  # uśrednianie wygenerowanych wartości z otoczeniem
-            if n.isRandomized():
+            if n.isRandomized() and n.getType() > 0:
                 surroundingHeight += n.getHeight()
                 surroundingFertility += n.getAgrVal()
                 a += 1

@@ -24,6 +24,8 @@ class Civilization:
         self.tresury_ = 0
         self.taxrate_ = 0
         self.income_ = 0
+        self.agrRateVal = 10
+        self.concentrationRateVal = 1.5
 
     def getId(self):
         return self.id_
@@ -33,8 +35,8 @@ class Civilization:
 
     def rate(self, tile):
         value = 0.
-        value += tile.getAgrVal()*10
-        value -= 1.2*(self.getDistance(tile.getCoords(), self.territoryCenter_) / self.getDistance(self.territoryCenter_, [self.territoryCenter_[0], (self.territoryCenter_[1]+(math.sqrt(self.currTerritory_/math.pi)))]))
+        value += tile.getAgrVal()*self.agrRateVal
+        value -= self.concentrationRateVal*(self.getDistance(tile.getCoords(), self.territoryCenter_) / self.getDistance(self.territoryCenter_, [self.territoryCenter_[0], (self.territoryCenter_[1]+(math.sqrt(self.currTerritory_/math.pi)))]))
         # for n in tile.getNeighbours():
         #    if n in self.territory_:
         #        value += 0.5
@@ -84,6 +86,7 @@ class Civilization:
     def looseTerritory(self, tile):
         self.laborers_ -= self.getLaborersOnTile(tile)
         self.territory_.remove(tile)
+        self.currTerritory_ -= 1
         tile.setCiv(None)
         self.territoryAgrValue_ -= tile.getAgrVal()
         for n in tile.getNeighbours():
