@@ -51,20 +51,25 @@ civ4.setStartingTile(map.getTile(x, y))
 view = View.View(map)
 
 
-civ1.setAgrRateVal(10)  # ustawienia cywilizacji różowej
+civ1.setAgrRateVal(10)      # ustawienia cywilizacji różowej
+civ1.setTechPriority(1)     # bazowo 1, max 10, wartość <=0 oznacza że cywilizacja nie będzie dążyła do rozwoju
+                            # technologicznego a zamiast tego będzie skupiać się na wzroście populacji
 civ1.setConcentrationRateVal(10)
 view.addCiv(civ1)
 
-civ1.setAgrRateVal(10)  # ustawienia cywilizacji niebieskiej
-civ1.setConcentrationRateVal(1.5)
+civ2.setAgrRateVal(10)  # ustawienia cywilizacji niebieskiej
+civ2.setConcentrationRateVal(1.5)
+civ2.setTechPriority(1)
 view.addCiv(civ2)
 
-civ1.setAgrRateVal(10)  # ustawienia cywilizacji zielonej
-civ1.setConcentrationRateVal(1.5)
+civ3.setAgrRateVal(10)  # ustawienia cywilizacji zielonej
+civ3.setConcentrationRateVal(1.5)
+civ3.setTechPriority(0)
 view.addCiv(civ3)
 
-civ1.setAgrRateVal(10)  # ustawienia cywilizacji żółtej
-civ1.setConcentrationRateVal(3)
+civ4.setAgrRateVal(10)  # ustawienia cywilizacji pomarańczowej
+civ4.setConcentrationRateVal(3)
+civ4.setTechPriority(5)
 view.addCiv(civ4)
 print(len(view.hexagons))
 view.mainloop()

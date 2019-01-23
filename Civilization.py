@@ -24,8 +24,46 @@ class Civilization:
         self.tresury_ = 0
         self.taxrate_ = 0
         self.income_ = 0
-        self.agrRateVal_ = 10
+        self.agrRateVal_ = 10.0
         self.concentrationRateVal_ = 1.5
+        self.techPriority_ = 1.0
+
+    def getTresury(self):
+        return self.tresury_
+
+    def getCurrTerritorySize(self):
+        return self.currTerritory_
+
+    def getMaxTerritorySize(self):
+        return self.maxTerritory_
+
+    def getTaxrate(self):
+        return self.taxrate_
+
+    def getTotalAgrVal(self):
+        return self.territoryAgrValue_
+
+    def getProduction(self):
+        return self.agrOutput_
+
+    def getPopulation(self):
+        return self.population_
+
+    def getLaborers(self):
+        return self.laborers_
+
+    def getSoldiers(self):
+        return self.soldiers_
+
+    def getTechLevel(self):
+        return self.technologyLevel_
+
+
+    def setTechPriority(self, val):
+        if val > 10:
+            self.techPriority_ = 10
+        else:
+            self.techPriority_ = val
 
     def getId(self):
         return self.id_
@@ -112,10 +150,10 @@ class Civilization:
         if laborers < 1:
             return 0
             print("ERROR: liczba robotników ujemna!")
-        return math.sqrt(laborers * agrValue*2)
+        return math.sqrt((laborers * agrValue*2)*(1+0.03*self.technologyLevel_))
 
     def getMaxTerritory(self, soldiers):
-        a = 0.4
+        a = 0.3 + 0.02*self.technologyLevel_
         r = soldiers**(2./10)
         return int(a * math.pi * r**2)
 
@@ -152,6 +190,24 @@ class Civilization:
 
     def soldiersPerTile(self):
         return self.soldiers_/self.currTerritory_
+
+    def calcTaxRate(self):
+        rate = self.calcMinTaxRate()
+        if self.techPriority_ > 0:
+            while (self.agrOutput_/self.laborers_)*(1-rate) > self.calcArmyWages()*10/self.techPriority_:
+                rate += 0.01
+            return rate
+        else:
+            if self.tresury_ > self.calcArmyWages() * self.soldiers_ + 1000:
+                rate -= 0.01
+            return rate
+
+    def getNewTech(self):
+        if self.tresury_ > (10000 * self.technologyLevel_**3 +300):
+            self.tresury_ -= (10000 * self.technologyLevel_**3)
+            self.technologyLevel_ += 1;
+
+
 
     def makeMove(self):
         expanded = False
@@ -243,9 +299,10 @@ class Civilization:
         self.agrOutput_ = self.getOutputs(self.laborers_, self.territoryAgrValue_)
         self.lastMoveBenefit_ = self.agrOutput_ - oldArgOutput
         tresuryBefore = self.tresury_
-        self.taxrate_ = self.calcMinTaxRate()
+        self.taxrate_ = self.calcTaxRate()
         self.tresury_ += self.calcTax()
         self.tresury_ -= self.calcArmyWages()*self.soldiers_
+        self.getNewTech()
         self.income_ = tresuryBefore - self.tresury_
         #if self.income_ < 0:
         #    self.taxrate_ = self.calcMinTaxRate()
