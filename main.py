@@ -49,9 +49,22 @@ civ4.setStartingTile(map.getTile(x, y))
 #    for j in i:
 #        j.printCoords()
 view = View.View(map)
+
+
+civ1.setAgrRateVal(10)  # ustawienia cywilizacji różowej
+civ1.setConcentrationRateVal(10)
 view.addCiv(civ1)
+
+civ1.setAgrRateVal(10)  # ustawienia cywilizacji niebieskiej
+civ1.setConcentrationRateVal(1.5)
 view.addCiv(civ2)
+
+civ1.setAgrRateVal(10)  # ustawienia cywilizacji zielonej
+civ1.setConcentrationRateVal(1.5)
 view.addCiv(civ3)
+
+civ1.setAgrRateVal(10)  # ustawienia cywilizacji żółtej
+civ1.setConcentrationRateVal(3)
 view.addCiv(civ4)
 print(len(view.hexagons))
 view.mainloop()

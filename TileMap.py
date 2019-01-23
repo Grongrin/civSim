@@ -43,17 +43,19 @@ class TileMap:
                 if iTile.getType() == 1:
                     for n in iTile.getNeighbours():
                         if n.getType() <= 0:
-                            iTile.setAgrVal(iTile.getAgrVal()+0.08)
-                            if iTile.getAgrVal() > 1:
-                                iTile.setAgrVal(1)
+                            #iTile.setAgrVal(iTile.getAgrVal()+0.08)
+                            #if iTile.getAgrVal() > 1:
+                            #    iTile.setAgrVal(1)
                             coastal = True;
                             break;
                     if coastal:
-                        for n in iTile.getNeighbours():
-                            if n.getType() == 1:
-                                n.setAgrVal(n.getAgrVal() + 0.05)
-                            if n.getAgrVal() > 1:
-                                n.setAgrVal(1)
+                        for n1 in iTile.getNeighbours():
+                            if n1.getType() == 1:
+                                for n in n1.getNeighbours():
+                                    if n.getType() == 1:
+                                        n.setAgrVal(n.getAgrVal() + 0.03)
+                                    if n.getAgrVal() > 1:
+                                        n.setAgrVal(1)
 
     def getTile(self, x, y):
         return self.map_[x][y]

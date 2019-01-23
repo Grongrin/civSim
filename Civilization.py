@@ -24,8 +24,8 @@ class Civilization:
         self.tresury_ = 0
         self.taxrate_ = 0
         self.income_ = 0
-        self.agrRateVal = 10
-        self.concentrationRateVal = 1.5
+        self.agrRateVal_ = 10
+        self.concentrationRateVal_ = 1.5
 
     def getId(self):
         return self.id_
@@ -33,10 +33,16 @@ class Civilization:
     def getDistance(self, coords1, coords2):
         return math.sqrt((coords1[0] - coords2[0]) ** 2 + (coords1[1] - coords2[1]) ** 2)
 
+    def setAgrRateVal(self, val):
+        self.agrRateVal_ = val
+
+    def setConcentrationRateVal(self, val):
+        self.concentrationRateVal_ = val
+
     def rate(self, tile):
         value = 0.
-        value += tile.getAgrVal()*self.agrRateVal
-        value -= self.concentrationRateVal*(self.getDistance(tile.getCoords(), self.territoryCenter_) / self.getDistance(self.territoryCenter_, [self.territoryCenter_[0], (self.territoryCenter_[1]+(math.sqrt(self.currTerritory_/math.pi)))]))
+        value += tile.getAgrVal()*self.agrRateVal_
+        value -= self.concentrationRateVal_ * (self.getDistance(tile.getCoords(), self.territoryCenter_) / self.getDistance(self.territoryCenter_, [self.territoryCenter_[0], (self.territoryCenter_[1] + (math.sqrt(self.currTerritory_ / math.pi)))]))
         # for n in tile.getNeighbours():
         #    if n in self.territory_:
         #        value += 0.5
