@@ -54,6 +54,7 @@ class View(Tk):
         self.canvas.tag_bind(buttonTXT4, "<Button-1>", self.pause)
 
 
+
     def pause(self,event):
         if self.Pause is not True:
             self.Pause=True
