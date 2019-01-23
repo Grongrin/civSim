@@ -1,7 +1,7 @@
 import TileMap
 import Tile
 import math
-import View02 as View
+import View as View
 import Civilization
 from tkinter import *
 

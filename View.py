@@ -4,16 +4,18 @@ from tkinter import *
 import math
 
 class Tile:
-    def __init__(self,x,y,a,cords,index):
+    def __init__(self,x,y,a,cords,index,civ,agrVal):
         self.x_ = x
         self.y_= y
         self.a_ = a
         self.cords_ = cords
         self.index_=index
+        self.civilizationId_ = civ
+        self.agrVal_ = agrVal
 
 
 class View(Tk):
-    def __init__(self):
+    def __init__(self,tilemap):
         Tk.__init__(self)
         self.hexagons = []
         self.civs_ = []
@@ -23,13 +25,102 @@ class View(Tk):
         self.canvas = Canvas(width=1400, height=900,bg="#AFEEEE" )
         self.canvas.pack()
         self.canvas.bind("<Motion>", self.getTileByXY)
-        self.canvas.create_text(1100,10,text="Tile info:")
         self.a_ = 0
+        self.tilemap_=tilemap
+        self.Poli = False
+        self.Geog=True
+        self.ShowCiv=True
+        self.Sleep = 1000
+        self.Pause = True
+        self.drawMap()
+        buttonBG = self.canvas.create_rectangle(800, 0, 900, 30, fill="grey40", outline="grey60")
+        buttonTXT = self.canvas.create_text(850, 15, text="Political")
+        self.canvas.tag_bind(buttonBG, "<Button-1>", self.clickedPoli)
+        self.canvas.tag_bind(buttonTXT, "<Button-1>", self.clickedPoli)
+        buttonBG2 = self.canvas.create_rectangle(900, 0, 1000, 30, fill="grey40", outline="grey60")
+        buttonTXT2 = self.canvas.create_text(950, 15, text="Geographical")
+        self.canvas.tag_bind(buttonBG2, "<Button-1>", self.clickedGeog)
+        self.canvas.tag_bind(buttonTXT2, "<Button-1>", self.clickedGeog)
+
+        buttonBG3 = self.canvas.create_rectangle(1000, 0, 1100, 30, fill="grey40", outline="grey60")
+        buttonTXT3 = self.canvas.create_text(1050, 15, text="Show/HideCiv")
+        self.canvas.tag_bind(buttonBG3, "<Button-1>", self.showCiv)
+        self.canvas.tag_bind(buttonTXT3, "<Button-1>", self.showCiv)
+
+
+        buttonBG4 = self.canvas.create_rectangle(1100, 0, 1200, 30, fill="grey40", outline="grey60")
+        buttonTXT4 = self.canvas.create_text(1150, 15, text="Pause")
+        self.canvas.tag_bind(buttonBG4, "<Button-1>", self.pause)
+        self.canvas.tag_bind(buttonTXT4, "<Button-1>", self.pause)
+
+        buttonBG5 = self.canvas.create_rectangle(1200, 0, 1300, 30, fill="grey40", outline="grey60")
+        buttonTXT5 = self.canvas.create_text(1250, 15, text="Speed up the sim")
+        self.canvas.tag_bind(buttonBG5, "<Button-1>", self.speedUp)
+        self.canvas.tag_bind(buttonTXT5, "<Button-1>", self.speedUp)
+
+        buttonBG6 = self.canvas.create_rectangle(1300, 0, 1400, 30, fill="grey40", outline="grey60")
+        buttonTXT6 = self.canvas.create_text(1350, 15, text="Sim speed reset")
+        self.canvas.tag_bind(buttonBG6, "<Button-1>", self.resetSpeed)
+        self.canvas.tag_bind(buttonTXT6, "<Button-1>", self.resetSpeed)
+
+    def speedUp(self,event):
+        if self.Sleep > 1:
+            self.Sleep = int(self.Sleep/10)
+
+
+    def resetSpeed(self, event):
+        self.Sleep = 1000
+
+    def pause(self,event):
+        if self.Pause is not True:
+            self.Pause=True
+        else:
+            self.Pause=False
+            self.doChanges()
+
+    def clickedPoli(self,event):
+        if not self.Poli:
+            self.Poli = True
+            self.Geog=False
+            self.updateView()
+
+
+    def clickedGeog(self,event):
+        if not self.Geog:
+            self.Poli = False
+            self.Geog=True
+            self.updateView()
+
+    def showCiv(self,event):
+        self.ShowCiv = not self.ShowCiv
+        self.updateView()
+
+    def updateView(self):
+        self.clearCanvas()
+        xSize = self.tilemap_.getXSize()
+        ySize = self.tilemap_.getYSize()
+        for i in range(xSize):
+            for j in range(ySize):
+                self.drawTile(self.tilemap_.getTile(i, j), self.a_)
+
+    def clearCanvas(self):
+        for i in self.hexagons:
+            self.canvas.delete(i.index_)
 
     def addCiv(self, civ):
         self.civs_.append(civ)
+        for t in civ.getTerritory():
+            self.drawTile(t, self.a_)
 
-    def drawMap(self,map):
+    def findCivById(self,id):
+        for civ in self.civs_:
+            print(civ.getId())
+            if civ.getId()==id:
+                return civ
+        return None
+
+    def drawMap(self):
+        map=self.tilemap_
         xSize = map.getXSize()
         ySize = map.getYSize()
         if ySize %2 ==0:
@@ -47,6 +138,7 @@ class View(Tk):
         for i in range(xSize):
             for j in range(ySize):
                 self.drawTile(map.getTile(i, j), self.a_)
+        self.doChanges()
 
     def fromRGB(self, R, G, B): # tłumaczenie koloru RGB na kolor dla tkinter
         return "#%02x%02x%02x" % (R, G, B)
@@ -57,10 +149,12 @@ class View(Tk):
         colors = [
             "#FFFF66",
             "#3366FF",
-            "#e63813",
-            "#091e4a",
-            "#0d98a8",
-            "#720da8"
+            "#F700FF",
+            "#3399ff",
+            "#00FF17",
+            "#ff6600",
+            "#660066",
+            "#990000"
         ]
         tileCoords = tile.getCoords()
         if tileCoords[1] % 2 == 0:
@@ -76,48 +170,108 @@ class View(Tk):
             endY = startY + a * math.cos(math.radians(angle * i))
             startX = endX
             startY = endY
-        if tile.getCiv() is not None:
-            id = tile.getCivId()
-            color = colors[id+2]
+        if self.Poli is True:
+            if tile.getCiv() is not None:
+                id = tile.getCivId()
+                color = colors[id+2]
+            else:
+                if tile.getType() == 1:
+                    color = colors[0]
+                else:
+                    color = colors[1]
+
+            index = self.canvas.create_polygon(coords[0][0],
+                                       coords[0][1],
+                                       coords[1][0],
+                                       coords[1][1],
+                                       coords[2][0],
+                                       coords[2][1],
+                                       coords[3][0],
+                                       coords[3][1],
+                                       coords[4][0],
+                                       coords[4][1],
+                                       coords[5][0],
+                                       coords[5][1],
+                                       fill=color,
+                                       outline="gray"
+                                       )
         else:
             if tile.getType() == 1:
-                #color = colors[0]
-                color = self.fromRGB(int(tile.getAgrVal()*255), int(tile.getAgrVal()*255), int(tile.getAgrVal()*255))
+                color = self.fromRGB(int((tile.getAgrVal()) * 255), int((tile.getAgrVal()) * 255), int((tile.getAgrVal()) * 255))
             else:
                 color = colors[1]
+            index = self.canvas.create_polygon(coords[0][0],
+                                                coords[0][1],
+                                                coords[1][0],
+                                                coords[1][1],
+                                                coords[2][0],
+                                                coords[2][1],
+                                                coords[3][0],
+                                                coords[3][1],
+                                                coords[4][0],
+                                                coords[4][1],
+                                                coords[5][0],
+                                                coords[5][1],
+                                                fill=color,
+                                                outline="gray",
+                                                   )
+            if tile.getCiv() is not None and self.ShowCiv is True:
+                id = tile.getCivId()
+                sti = 'gray75'
+                color = colors[id+2]
+                index = self.canvas.create_polygon(coords[0][0],
+                                                   coords[0][1],
+                                                   coords[1][0],
+                                                   coords[1][1],
+                                                   coords[2][0],
+                                                   coords[2][1],
+                                                   coords[3][0],
+                                                   coords[3][1],
+                                                   coords[4][0],
+                                                   coords[4][1],
+                                                   coords[5][0],
+                                                   coords[5][1],
+                                                   fill=color,
+                                                   outline="gray",
+                                                   stipple=sti
+                                                   )
 
-        index = self.canvas.create_polygon(coords[0][0],
-                                   coords[0][1],
-                                   coords[1][0],
-                                   coords[1][1],
-                                   coords[2][0],
-                                   coords[2][1],
-                                   coords[3][0],
-                                   coords[3][1],
-                                   coords[4][0],
-                                   coords[4][1],
-                                   coords[5][0],
-                                   coords[5][1],
-                                   fill=color,
-                                   outline="gray",
-                                   )
+
 
         for i in coords:
             if i[0]>self.biggestTileX:
                 self.biggestTileX = i[0]
             if i[1]>self.biggestTileY:
                 self.biggestTileY=i[1]
-        print("(",tile.getX(), ", ", tile.getY(),", ",index, ")", sep='')
-
-        hex = Tile(tile.getX(),tile.getY(),a,coords,index)
+        civ = tile.getCiv()
+        if (civ):
+            civId = civ.getId()
+        else:
+            civId=-1
+        hex = Tile(tile.getX(),tile.getY(),a,coords,index,civId,tile.getAgrVal())
         self.hexagons.append(hex)
 
+    def civInfo(self,civilization):
+        civInfo="\nCiv Id: "+str(civilization.id_)+"\n"
+        civInfo +="Obecna populacja: "+str(civilization.getPopulation())+" \nŻołnierze: "+str(civilization.getSoldiers())+ " \nRobotnicy: "+str(civilization.getLaborers())+"\n"
+        civInfo +="AgrVal: "+str(civilization.getTotalAgrVal())+"\n"
+        civInfo +="Produkcja: "+str(civilization.getProduction())+" \nProdukcja po odjęciu  kosztu armii: "+str(civilization.getProduction() - civilization.calcArmyWages()*civilization.getSoldiers())+"\n"
+        civInfo +="Produkcja na robotnika po odjęciu podatku: "+str((civilization.getProduction()) * (1 - civilization.getTaxrate()) / civilization.getLaborers())+"\n"
+        civInfo +="Żołd na jednego żołnierza: "+str(civilization.calcArmyWages())+"\n"
+        civInfo +="Max territory: "+str(civilization.getMaxTerritorySize())+" \nCurrent territory: "+str(civilization.getCurrTerritorySize())+"\n"
+        civInfo +="Tresury: "+ str(civilization.getTresury())+"\n"
+        civInfo +="Tax rate: "+str(civilization.getTaxrate())+"\n"
+        civInfo += "Technology level: " + str(civilization.getTechLevel()) + "\n"
+        return civInfo
 
     def showTileDetails(self,tile):
         self.canvas.delete(self.infoId)
-        onscreen = "("+str(tile.x_)+","+str(tile.y_)+")"
-        self.infoId=self.canvas.create_text(1100,20,text=onscreen)
-        print("(", tile.x_, ", ", tile.y_, ")", sep='')
+        civId = tile.civilizationId_
+        if civId == -1:
+            onscreen = "Tile info:\n("+str(tile.x_)+","+str(tile.y_)+")"+"\nŻyzność pola: " + str(tile.agrVal_)
+        else:
+            onscreen = "Tile info:\n("+str(tile.x_)+","+str(tile.y_)+")"+"\nŻyzność pola: " + str(tile.agrVal_)+"\n\n\n\nCvilization info:"+self.civInfo(self.findCivById(civId))
+        self.infoId=self.canvas.create_text((700,20),anchor="nw",font=("helvetica", 12),text=onscreen)
 
 
     def findNearestTile(self,nearest):
@@ -126,31 +280,24 @@ class View(Tk):
                 return i
         return None
 
-    def getTileByXY(self, event):
+    def doChanges(self):
         for c in self.civs_:
             changedTiles = c.makeMove()
             if changedTiles is not None:
                 for t in changedTiles:
                     self.drawTile(t, self.a_)
-        print(event.x, event.y)
+        self.canvas.update()
+        if self.Pause is False:
+            self.canvas.after(self.Sleep,self.doChanges)
+
+    def getTileByXY(self, event):
         if (event.x<self.biggestTileX and event.y<self.biggestTileY):
             nearest = int(self.canvas.find_closest(event.x,event.y)[0])
-            print(nearest)
             tile = self.findNearestTile(nearest)
             if tile:
                 self.showTileDetails(tile)
 
 
-if __name__ =='__main__':
-    view = View()
-    map = tm.TileMap(100,170)
-    m = map.getMap()
-    for i in m:
-        for j in i:
-            j.printCoords()
-    view.drawMap(map)
-    print(len(view.hexagons))
-    view.mainloop()
 
 
 
