@@ -31,6 +31,7 @@ class View(Tk):
         self.Geog=True
         self.ShowCiv=True
         self.Sleep = 1
+        self.Pause = False
         self.drawMap()
         buttonBG = self.canvas.create_rectangle(900, 0, 1000, 30, fill="grey40", outline="grey60")
         buttonTXT = self.canvas.create_text(950, 15, text="Political")
@@ -54,10 +55,10 @@ class View(Tk):
 
 
     def pause(self,event):
-        if self.Sleep>20000:
-            self.Sleep=5
+        if self.Pause is not True:
+            self.Pause=True
         else:
-            self.Sleep=20100
+            self.Pause=False
             self.doChanges()
 
     def clickedPoli(self,event):
@@ -265,7 +266,8 @@ class View(Tk):
                 for t in changedTiles:
                     self.drawTile(t, self.a_)
         self.canvas.update()
-        self.canvas.after(self.Sleep,self.doChanges)
+        if self.Pause is False:
+            self.canvas.after(self.Sleep,self.doChanges)
 
     def getTileByXY(self, event):
         if (event.x<self.biggestTileX and event.y<self.biggestTileY):
