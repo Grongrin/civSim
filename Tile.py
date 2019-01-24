@@ -102,6 +102,8 @@ class Tile:
                 self.height_ = (self.height_ + (surroundingHeight / a)) / 2
                 if random.random() > 0.4:
                     self.agrVal_ = (self.agrVal_ + (surroundingFertility / a)) / 2
+        if self.agrVal_ < 0.6 and random.random()<0.1:
+            self.agrVal_ += 0.05
 
         self.randomized_ = True
 

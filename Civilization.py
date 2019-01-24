@@ -106,7 +106,7 @@ class Civilization:
             print("ERROR: This civilization doesn't own that tile!")
             return
 
-        return int(self.laborers_*(tile.getAgrVal()/self.territoryAgrValue_))
+        return int(self.laborers_*(tile.getAgrVal()/self.getTotalAgrVal()))
 
     def takeoverTerritory(self, tile):
         print("Taking over territory")
@@ -128,7 +128,7 @@ class Civilization:
         self.territoryCenter_[1] = (self.territoryCenter_[1] * (self.currTerritory_ - 1) + tile.getY()) / self.currTerritory_
 
     def looseTerritory(self, tile):
-        self.laborers_ -= self.getLaborersOnTile(tile)
+        self.laborers_ -= self.getLaborersOnTile(tile)*3/2
         self.territory_.remove(tile)
         self.currTerritory_ -= 1
         tile.setCiv(None)
@@ -204,7 +204,7 @@ class Civilization:
 
     def getNewTech(self):
         if self.tresury_ > (10000 * self.technologyLevel_**3 +300):
-            self.tresury_ -= (10000 * self.technologyLevel_**3)
+            self.tresury_ -= (10000 * self.technologyLevel_**2)
             self.technologyLevel_ += 1;
 
 
@@ -230,7 +230,7 @@ class Civilization:
                     bestFreeTile = bestFreeTile
 
         if bestTile.getCiv() is not None:
-            while soldiersToExpand < bestTile.getCiv().soldiersPerTile():
+            while soldiersToExpand*(1+(self.technologyLevel_*0.1)) < bestTile.getCiv().soldiersPerTile()*(1+(bestTile.getCiv().getTechLevel()*0.1)):
                 soldiersToExpand += 1
 
         if self.laborers_ >= soldiersToExpand and \

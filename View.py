@@ -64,8 +64,7 @@ class View(Tk):
         self.canvas.tag_bind(buttonTXT6, "<Button-1>", self.resetSpeed)
 
     def speedUp(self,event):
-        if self.Sleep > 1:
-            self.Sleep = int(self.Sleep/10)
+        self.Sleep = int(self.Sleep/10)
 
 
     def resetSpeed(self, event):
